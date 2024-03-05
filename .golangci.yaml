@@ -1,0 +1,53 @@
+---
+run:
+  concurrency: 4
+  timeout: 5m
+
+linters:
+  disable-all: false
+  enable:
+    - asciicheck
+    - bodyclose
+    # - depguard
+    - dogsled
+    - errcheck
+    - exhaustive
+    - exportloopref
+    - gci
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - gofmt
+    - goheader
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - prealloc
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - stylecheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+
+linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/philippe-vandermoere/helm-plugin-kubeconform)
+  goimports:
+    local-prefixes:
+      github.com/philippe-vandermoere/helm-plugin-kubeconform

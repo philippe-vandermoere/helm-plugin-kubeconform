@@ -1,0 +1,70 @@
+---
+name: test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+      - name: Run golangci
+        uses: golangci/golangci-lint-action@v4
+        with:
+          args: --verbose
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skip-cache: true
+
+  test:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          cache: true
+          go-version-file: 'go.mod'
+      - name: Download dependencies
+        run: go mod download
+      - name: test
+        run: go test -v ./...
+
+  build:
+    name: Build
+    needs:
+      - lint
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup helm
+        uses: azure/setup-helm@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          cache: true
+          go-version-file: 'go.mod'
+      - name: Download dependencies
+        run: go mod download
+      - name: Build
+        run: go build -v -ldflags="-X main.version=${GITHUB_REF_NAME}" -o ./bin/helm-kubeconform ./cmd/helm-kubeconform
+      - name: Install Helm plugin
+        shell: bash
+        run: |
+          helm plugin install .
+          helm kubeconform --version
+          helm kubeconform --help
+        env:
+          HELM_KUBCONFORM_PLUGIN_NO_INSTALL_HOOK: true
